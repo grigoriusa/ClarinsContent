@@ -1,15 +1,10 @@
-const jwt = require('jsonwebtoken');
 const fs = require('fs');
-const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 const axios = require('axios');
-const querystring = require('querystring');
-function readPrivateKey(filePath) {
-  const keyData = fs.readFileSync(filePath, 'utf8');
-  return crypto.createPrivateKey({
-      key: keyData,
-      format: 'pem',
-      type: 'pkcs1' // or 'pkcs8' depending on your key format
-  });
+const qs = require('querystring');
+
+function readPrivateKey(path) {
+  return fs.readFileSync(path, 'utf8');
 }
 
 function getBearerToken() {
@@ -32,11 +27,31 @@ function getBearerToken() {
   return token;
 }
 
+async function getAccessToken() {
+  const JWT = getBearerToken();
+
+  const data = qs.stringify({
+    client_assertion: JWT,
+    client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+    grant_type: 'client_credentials'
+  });
+
+  const TOKEN_URL = 'https://account.demandware.com:443/dwsso/oauth2/access_token';
+
+  try {
+    const response = await axios.post(TOKEN_URL, data);
+    return response.data.access_token;
+  } catch (error) {
+    console.error(error);
+  }
+}
 
 function getBMToken() {
-  return 'eyJ6aXAiOiJOT05FIiwidHlwIjoiSldUIiwiYWxnIjoiUlMyNTYiLCJraWQiOiJEMWhPUDdEODN4TjBqZWlqaTI3WWFvZFRjXC9BPSJ9.eyJzZXMiOiJ4VDFlMk1kRWM0blJra01NYk5vdmt0LUVLTl9aSzV1T1Q5eGROREp3WHZHSVlldnFtdmU1clJsblAweG01Nml0U0UxbTBrVmJncmduTzU5V3VaYVZ3dz09Iiwic3ViIjoiYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhIiwiY3RzIjoiT0FVVEgyX1NUQVRFTEVTU19HUkFOVCIsImF1ZGl0VHJhY2tpbmdJZCI6IjExYmY2N2ZjLTlhNmQtNGQ3YS1iZmNkLWEyZTNmYTYxMDA4NiIsImlzcyI6ImFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYSIsInRva2VuTmFtZSI6ImFjY2Vzc190b2tlbiIsInRva2VuX3R5cGUiOiJCZWFyZXIiLCJhdXRoR3JhbnRJZCI6IjJlODI2NzEyLTU2MjktNDI2MS1iZDBiLTlkODJlMGM5NzVkYiIsImNsaWVudF9pZCI6ImFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYSIsImF1ZCI6ImFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYSIsIm5iZiI6MTcxMjUwNDA5MywidXNyIjoieWV2aGVuaWlAY29udHJhY29sbGVjdGl2ZS5jb20iLCJncmFudF90eXBlIjoiY2xpZW50X2NyZWRlbnRpYWxzIiwic2NvcGUiOlsibWFpbCJdLCJhdXRoX3RpbWUiOjE3MTI1MDQwOTMsInJlYWxtIjoiXC8iLCJ0bnQiOiJia2NsXzAwMSIsImV4cCI6MTcxMjUwNDk5MywiaWF0IjoxNzEyNTA0MDkzLCJleHBpcmVzX2luIjo4OTksImp0aSI6IjdiNDA4MWZkLTg1NTUtNDMwOC05NGMyLWQ1MWQ1MTAzZTJmNyJ9.GHuuhD_cmBN6TQ9riv0ogZIlk5hJVt8aLYJG8iaNmwNcWJP48M0le6iEXcFyfOA-WYOnrm8e34NIVyTGesEvsVzr3zpVe3SS_iD3EdJZv3X7X8DcJ2HTg56kLyVJoI8q-HRcL_mvcCbaZGYUzu60XzPzNd8q6xYe_xfo2JUAvUUAokl5dPIuFBnqpN4JGq9_DoC9k5CFiBQMP8V4KqmVmhiSM_rp98NI6843wYDK-N--WzH78JbyKCnVUkzLrFEHC33Xv_d2HOYERBLBTgOyqLadrANeBHhm2MZv5pnH7wxbSS9EvVbQs7VuLVKsf-IzN-3B8GmH-N05QOvfQkgT5Q'
+  return 'eyJ6aXAiOiJOT05FIiwidHlwIjoiSldUIiwiYWxnIjoiUlMyNTYiLCJraWQiOiJEMWhPUDdEODN4TjBqZWlqaTI3WWFvZFRjXC9BPSJ9.eyJzZXMiOiJ5dU5kZzlrdGFxVzBoc2NYbm51c0pFa05aWXpCWVI4SUhyem9RNTNXaVV5NzVPVEw2R21VZUV1bFNIZmxNUS1VOXJiWS1ReUtVN2lRaTNKUkx4S3RzUT09Iiwic3ViIjoiYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhIiwiY3RzIjoiT0FVVEgyX1NUQVRFTEVTU19HUkFOVCIsImF1ZGl0VHJhY2tpbmdJZCI6IjdhMDA4MzdmLTg3NmUtNGRkMS05YWYxLTFkMzU2YTdlZWExNCIsImlzcyI6ImFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYSIsInRva2VuTmFtZSI6ImFjY2Vzc190b2tlbiIsInRva2VuX3R5cGUiOiJCZWFyZXIiLCJhdXRoR3JhbnRJZCI6ImQyYTJjZmY5LTNiMzEtNGU5NC05NWFjLTNlZmQyZmNkYjhkOSIsImNsaWVudF9pZCI6ImFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYSIsImF1ZCI6ImFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYSIsIm5iZiI6MTcxMzM1ODkwOSwidXNyIjoieWV2aGVuaWlAY29udHJhY29sbGVjdGl2ZS5jb20iLCJncmFudF90eXBlIjoiY2xpZW50X2NyZWRlbnRpYWxzIiwic2NvcGUiOlsibWFpbCJdLCJhdXRoX3RpbWUiOjE3MTMzNTg5MDksInJlYWxtIjoiXC8iLCJ0bnQiOiJia2NsXzAwMSIsImV4cCI6MTcxMzM1OTgwOSwiaWF0IjoxNzEzMzU4OTA5LCJleHBpcmVzX2luIjo4OTksImp0aSI6IjkzMWIxYmZjLTJiNWUtNGUxNS1iMmI3LWU3M2EwYzk1ZTdlYiJ9.ex8N8EQ-j7lBZt00hXW1uQUQe9JWN0dyleHfQDQnJ5z86qMwgv0XR7PqDcROv0D_IaWcqTLXf5jUyWBfTyyg3iX7pkZsAf0u9MG6ytfgCggSA_DdmDw5yS0q4vdLfTuDLopQmBg5SJis5ucG-EG82J50AgmrDdkku5-y5eYTksCV8Ar-dWRXf0JX8wyVust8m24Fjo3HBZukxN4gFr2eM9_YUQOZTa9vhXNjpsNW0im7f3QnMY6LGIeZB-SuuGXHiuuvJB7kR-25OBvU7I3tl6CwB-ibbdGdMYe0Cb-m9wOmOZn7RdV57LraaHy8Xzof566KA74PRk9ZNYhEWrwc3Q'
 }
 
 module.exports = getBMToken;
 
 module.exports = getBearerToken;
+
+module.exports = getAccessToken;

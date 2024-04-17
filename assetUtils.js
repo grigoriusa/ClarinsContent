@@ -1,6 +1,6 @@
 const { sendData } = require("./communnicationUtils");
 
-const environmentUrl = 'https://bkcl-001.dx.commercecloud.salesforce.com/s/-/dw/data/v19_10/libraries';
+const environmentUrl = 'https://staging-eu01-clarins.demandware.net/s/-/dw/data/v19_10/libraries';
 const clientId = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const library_id = 'clarins-v3';
 const folder_id = 'SEOptiversal';
@@ -25,7 +25,7 @@ async function getOrCreateAssetById(data) {
 
 async function getAssetById(id) {
     var data = {};
-    let assetUrl = `${environmentUrl}/Sleepworld/content/${id}?client_id=${clientId}`;
+    let assetUrl = `${environmentUrl}/${library_id}/content/${id}?client_id=${clientId}`;
     const result = await sendData(data, assetUrl, 'GET');
     if (result.error && result.error === 'Not found') {
         return false;
@@ -34,9 +34,10 @@ async function getAssetById(id) {
 }
 
 async function getAllAssetsFromFolder(folderId) {
-    const url = `https://{host}/s/-/dw/data/{OCAPI_version}/libraries/{library_id}/folders/${folderId}/content`;
+    const url = `https://staging-eu01-clarins.demandware.net/s/-/dw/data/v19_1/libraries/clarins-v3/folders/SEOptiversal/content`;
     const result = await sendData({}, url, 'GET');
-    return result;
+    const ids = result.hits.map(hit => hit.id);
+    return ids;
 }
 
 function prepareData(id, title, content, online, searchable) {
@@ -78,15 +79,16 @@ function prepareData(id, title, content, online, searchable) {
 }
 
 async function updateAsset(data) {
-    let assetUrl = `${environmentUrl}/Sleepworld/content/${data.id}?client_id=${clientId}`;
+    let assetUrl = `${environmentUrl}/${library_id}/content/${data.id}?client_id=${clientId}`;
     const result = await sendData(data, assetUrl, 'UPDATE');
     console.log(result);
 }
 
 async function createAsset(data) {
-    let assetUrl = `${environmentUrl}/Sleepworld/content/${data.id}?client_id=${clientId}`;
+    let assetUrl = `${environmentUrl}/${library_id}/content/${data.id}?client_id=${clientId}`;
     const result = await sendData(data, assetUrl, 'PUT');
     console.log(result);
 }
 
 exports.getOrCreateAssetById = getOrCreateAssetById;
+exports.getAllAssetsFromFolder = getAllAssetsFromFolder;
