@@ -1,19 +1,18 @@
 const { performAction, getAllAssetsFromFolder } = require('./assetUtils');
-const { getData, getStringsAfterShop } = require('./communnicationUtils');
+const { getStringsAfterShop } = require('./communnicationUtils');
 const getAccessToken = require('./bearer.js');
-const library_id = 'clarins-v3';
-const folder_id = 'SEOptiversal';
+const variables = process.env;
 
 function compareAssets(getAllClarinsAssets, allOptiversalAssets) {
     let result = [];
 
     allOptiversalAssets.forEach(asset => {
-        let existsInClarins = getAllClarinsAssets.includes('OPVSL_' + asset);
+        let existsInClarins = getAllClarinsAssets.includes(variables.PREFIX + asset);
         result.push({ id: asset, action: existsInClarins ? 'update' : 'create' });
     });
 
     getAllClarinsAssets.forEach(asset => {
-        let id = asset.replace('OPVSL_', '');
+        let id = asset.replace(variables.PREFIX, '');
         if (!allOptiversalAssets.includes(id)) {
             result.push({ id: id, action: 'disable' });
         }
@@ -25,7 +24,7 @@ function compareAssets(getAllClarinsAssets, allOptiversalAssets) {
 async function main() {
     try {
         const token = await getAccessToken();
-        var getAllClarinsAssets = await getAllAssetsFromFolder('SEOptiversal', token);
+        var getAllClarinsAssets = await getAllAssetsFromFolder(variables.FOLDER_ID, token);
         var allOptiversalAssets = await getStringsAfterShop();
         var result = compareAssets(getAllClarinsAssets, allOptiversalAssets);
         let promises = result.map(item => performAction(item.action, item.id, token));

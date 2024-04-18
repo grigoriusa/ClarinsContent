@@ -1,10 +1,5 @@
 const { sendData, getData } = require("./communnicationUtils");
-
-const environmentUrl = 'https://staging-eu01-clarins.demandware.net/s/-/dw/data/v19_10/libraries';
-const library_id = 'clarins-v3';
-const folder_id = 'SEOptiversal';
-const clientId = '3b8fd415-29b4-43b7-b6ab-a3b90bf84526';
-const prefix = 'OPVSL_';
+const variables = process.env;
 
 async function getOrCreateAssetById(data) {
     const id = data.slug;
@@ -24,7 +19,7 @@ async function getOrCreateAssetById(data) {
 
 async function getAssetById(id) {
     var data = {};
-    let assetUrl = `${environmentUrl}/${library_id}/content/${id}?client_id=${clientId}`;
+    let assetUrl = `${variables.ENVIRONMENTURL}/${variables.LIBRARY_ID}/content/${id}?client_id=${variables.CLIENTID}`;
     const result = await sendData(data, assetUrl, 'GET');
     if (result.error && result.error === 'Not found') {
         return false;
@@ -33,7 +28,7 @@ async function getAssetById(id) {
 }
 
 async function getAllAssetsFromFolder(folderId, token) {
-    const url = `https://staging-eu01-clarins.demandware.net/s/-/dw/data/v19_1/libraries/clarins-v3/folders/${folderId}/content`;
+    const url = `${variables.ENVIRONMENTURL}/${variables.LIBRARY_ID}/folders/${folderId}/content`;
     const result = await sendData({}, url, 'GET', token);
     const ids = result.hits.map(hit => hit.id);
     return ids;
@@ -47,7 +42,7 @@ function prepareData(id, title, content, online, searchable) {
         "description": {
             "default": title
         },
-        "id": prefix + id,
+        "id": variables.PREFIX + id,
         "name": {
             "default": title
         },
@@ -84,7 +79,7 @@ function prepareDataForDisable(id) {
     const data = {
         "_v": "19.10",
         "_type": "content_asset",
-        "id": prefix + id,
+        "id": variables.PREFIX + id,
         "online": {
             "default": false,
             "default@clarinsuk": false
@@ -98,27 +93,23 @@ function prepareDataForDisable(id) {
 
 function disableAsset(id, token) {
     var data = prepareDataForDisable(id);
-    let assetUrl = `${environmentUrl}/${library_id}/content/${id}?client_id=${clientId}`;
+    let assetUrl = `${variables.ENVIRONMENTURL}/${variables.LIBRARY_ID}/content/${id}?client_id=${variables.CLIENTID}`;
     const result = sendData(data, assetUrl, 'PUT', token);
-    console.log(result);
 }
 
 async function updateAsset(data, token) {
-    let assetUrl = `${environmentUrl}/${library_id}/content/${data.id}?client_id=${clientId}`;
+    let assetUrl = `${variables.ENVIRONMENTURL}/${variables.LIBRARY_ID}/content/${data.id}?client_id=${variables.CLIENTID}`;
     const result = await sendData(data, assetUrl, 'PUT', token);
-    console.log(result);
 }
 
 async function createAsset(data, token) {
-    let assetUrl = `${environmentUrl}/${library_id}/content/${data.id}?client_id=${clientId}`;
+    let assetUrl = `${variables.ENVIRONMENTURL}/${variables.LIBRARY_ID}/content/${data.id}?client_id=${variables.CLIENTID}`;
     const result = await sendData(data, assetUrl, 'PUT', token);
-    console.log(result);
 }
 
 async function assignAssetToFolder(content_id, token) {
-    let assetUrl = `${environmentUrl}/${library_id}/folder_assignments/${content_id}/${folder_id}`;
+    let assetUrl = `${variables.ENVIRONMENTURL}/${variables.LIBRARY_ID}/folder_assignments/${content_id}/${variables.FOLDER_ID}`;
     const result = await sendData({}, assetUrl, 'PUT', token);
-    console.log(result);
 }
 
 async function performAction(action, id, token) {
@@ -129,13 +120,13 @@ async function performAction(action, id, token) {
             data = await getData(id);
             var preparedData = prepareData(data.slug, data.title, data.content, true, false);
             createAsset(preparedData, token);
-            return assignAssetToFolder(prefix + id, token);
+            return assignAssetToFolder(variables.PREFIX + id, token);
         case 'update':
             data = await getData(id);
             var preparedData = prepareData(data.slug, data.title, data.content, true, false);
             return updateAsset(preparedData, token);
         case 'disable':
-            return disableAsset(prefix + id, token);
+            //return disableAsset(variables.PREFIX + id, token);
         default:
             return Promise.resolve();
     }

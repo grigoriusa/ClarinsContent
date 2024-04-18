@@ -1,9 +1,6 @@
-const getBMToken = require('./bearer.js');
-const getBearerToken = require('./bearer.js');
-const getAccessToken = require('./bearer.js');
 const axios = require('axios');
 const xml2js = require('xml2js');
-
+const variables = process.env;
 
 
 async function sendData(data, url, method, token) {
@@ -49,7 +46,7 @@ async function sendData(data, url, method, token) {
 }
 
 async function getData(id) {
-    const url = `https://clarins.stg.optiversal.com/data/${id}.json`;
+    const url = `${variables.CLARINS_URL}/data/${id}.json`;
   
     try {
       const response = await axios.get(url);
@@ -71,7 +68,7 @@ async function getData(id) {
   
   async function getStringsAfterShop() {
     try {
-      const response = await axios.get('https://clarins.stg.optiversal.com/sitemap.xml');
+      const response = await axios.get(`${variables.CLARINS_URL}/sitemap.xml`);
       const parser = new xml2js.Parser();
       const result = await parser.parseStringPromise(response.data);
       const urls = result.urlset.url;

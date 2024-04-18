@@ -17,7 +17,4 @@ function readPrivateKey(filePath) {
     const buffer = Buffer.from(pemString, 'base64');
     return crypto.createPrivateKey(buffer);
 }
-
-// Usage
 const privateKey = readPrivateKey('clarins_key');
-//console.log(privateKey);
