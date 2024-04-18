@@ -6,9 +6,7 @@ const xml2js = require('xml2js');
 
 
 
-async function sendData(data, url, method) {
-    var token = await getAccessToken();
-    console.log('token ' + token);
+async function sendData(data, url, method, token) {
     try {
         if (method === 'GET') {
             const response = await axios.get(url, {
@@ -50,8 +48,8 @@ async function sendData(data, url, method) {
     }
 }
 
-async function getData() {
-    const url = 'https://clarins.stg.optiversal.com/data/mascara-for-long-lashes.json';
+async function getData(id) {
+    const url = `https://clarins.stg.optiversal.com/data/${id}.json`;
   
     try {
       const response = await axios.get(url);
